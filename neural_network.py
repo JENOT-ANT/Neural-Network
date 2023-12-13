@@ -1,3 +1,6 @@
+from random import normalvariate as rand
+from math import exp
+
 #      [] - [] - []
 #      [] - [] - [] \ []
 # [] / [] - [] - [] - []
@@ -6,11 +9,7 @@
 #      [] - [] - [] / []
 #      [] - [] - []
 
-from random import normalvariate as rand
-from math import exp
-
-
-
+# HIDDEN LAYER ACTIVATION
 def relu(inputs: list[float]) -> list[float]:
     fixed: list[float] = []
     
@@ -19,6 +18,7 @@ def relu(inputs: list[float]) -> list[float]:
     
     return fixed
 
+# OUTPUT LAYER ACTIVATION
 def soft_max(outputs: list[float]) -> list[float]:
     max_value: float = max(outputs)
     fixed: list[float] = []
@@ -34,6 +34,10 @@ def soft_max(outputs: list[float]) -> list[float]:
 
     return fixed
 
+def linear(outputs: list[float]) -> list[float]:
+    return outputs
+
+# ----------------------------------------
 
 class Neuron:
     weights: list[float]
@@ -49,6 +53,18 @@ class Neuron:
         self._test_weights = [0 for _ in range(inputs_amount)]
         self._test_bias = 0
 
+    def _forward(self, weights: list[float], bias: float, inputs: list[float]):
+        output: float = 0
+
+        if len(weights) != len(inputs):
+            raise Exception(f'Inputs do not match weights at: {self}')
+
+        for i in range(len(inputs)):
+            output += inputs[i] * weights[i]
+        
+        return output + bias
+
+
     def apply(self):
         self.weights = [value for value in self._test_weights]
         self.bias = self._test_bias
@@ -60,26 +76,11 @@ class Neuron:
             self._test_weights[i] = self.weights[i] + delta * rand()
     
     def test_forward(self, inputs: list[float]):
-        output: float = 0
-
-        if len(self._test_weights) != len(inputs):
-            raise Exception(f'Inputs do not match weights. {self}')
-
-        for i in range(len(inputs)):
-            output += inputs[i] * self._test_weights[i]
-        
-        return output + self._test_bias
+        return self._forward(self._test_weights, self._test_bias, inputs)
 
     def forward(self, inputs: list[float]):
-        output: float = 0
+        return self._forward(self.weights, self.bias, inputs)
 
-        if len(self.weights) != len(inputs):
-            raise Exception(f'Inputs do not match weights. {self}')
-
-        for i in range(len(inputs)):
-            output += inputs[i] * self.weights[i]
-        
-        return output + self.bias
 
 class Layer:
     neurons: list[Neuron]
@@ -158,3 +159,4 @@ class Network:
             inputs = self.layers[i].forward(activation(inputs))
 
         return output_activation(inputs)
+
